@@ -67,6 +67,15 @@ body {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+.thatcher-image {
+    max-width: 100%;
+    max-height: 400px;   /* Limit height */
+    object-fit: contain; /* Keep full image visible */
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
 /*
    TYPOGRAPHY
    Heading and paragraph styles
