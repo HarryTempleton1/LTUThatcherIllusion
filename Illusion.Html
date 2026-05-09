@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thatcher Illusion</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <!-- Header: Leeds Trinity logo top-left -->
+    <header class="header">
+        <img src="LEEDS_TRINITY_LOGO.png" alt="LSU Logo" class="logo">
+    </header>
+
+    <!-- Main card -->
+    <div class="container">
+
+        <h1>Thatcher Illusion</h1>
+
+        <div class="camera">
+
+            <!-- Live camera feed -->
+            <video class="Video" autoplay playsinline></video>
+
+            <!-- Status message (camera ready / errors) -->
+            <p id="camera-status" class="camera-status">Starting camera…</p>
+
+            <!-- Trigger capture -->
+            <button class="Capture">Capture Image</button>
+
+            <!--
+                Hidden canvas — JS draws a video frame here to extract pixel data.
+                Never needs to be visible to the user.
+            -->
+            <canvas id="snapshot-canvas"></canvas>
+
+            <!-- Shows the captured frame after the button is pressed -->
+            <img id="captured-preview" alt="Captured image preview">
+
+        </div>
+
+    </div>
+
+    <!--
+        type="module" lets you use ES module exports (e.g. getStoredImage)
+        from other scripts. Remove the attribute if you don't need that.
+    -->
+    <script type="module" src="camera.js"></script>
+
+</body>
+</html>

@@ -115,3 +115,70 @@ p {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
+
+/* Camera UI */
+.camera {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.Video {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 6px;
+    background: #000;
+    /* Flash feedback on capture */
+    transition: opacity 0.15s ease;
+}
+
+.Video.flash {
+    opacity: 0.2;
+}
+
+.Capture {
+    background-color: var(--primary-burgundy);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    padding: 12px 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Capture:hover {
+    background-color: rgba(102, 0, 51, 1);
+    transform: translateY(-2px);
+}
+
+.Capture:active {
+    transform: translateY(0);
+}
+
+/* Hidden canvas — only used for pixel extraction, never displayed */
+#snapshot-canvas {
+    display: none;
+}
+
+/* Preview of captured image */
+#captured-preview {
+    display: none; /* shown by JS after first capture */
+    width: 100%;
+    max-width: 480px;
+    border-radius: 6px;
+    border: 2px solid var(--accent-beige);
+    margin-top: 8px;
+}
+
+/* Status message */
+.camera-status {
+    font-size: 0.9rem;
+    min-height: 1.2em;
+}
+
+.camera-status.ok    { color: var(--text-light); }
+.camera-status.error { color: #c0392b; font-weight: 600; }
