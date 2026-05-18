@@ -122,21 +122,26 @@ function resetMarkers() {
 }
 
 function createIllusion() {
-  const width = sourceImg.naturalWidth;
-  const height = sourceImg.naturalHeight;
+  // Create the Thatcher-effected image data once and cache it
+  const offscreen = document.createElement('canvas');
+  offscreen.width = sourceImg.naturalWidth;
+  offscreen.height = sourceImg.naturalHeight;
+  const offCtx = offscreen.getContext('2d');
+  offCtx.drawImage(sourceImg, 0, 0);
 
-  // Calculate region sizes based on markers
-  const eyeRadius = Math.abs(markers.rightEye.x - markers.leftEye.x) / 4;
-  const mouthWidth = eyeRadius * 2;
-  const mouthHeight = eyeRadius * 0.8;
+  const eyeDistance = Math.abs(markers.rightEye.x - markers.leftEye.x);
+  flipFeatureVertically(offCtx, markers.leftEye.x, markers.leftEye.y, eyeDistance / 3, eyeDistance / 3);
+  flipFeatureVertically(offCtx, markers.rightEye.x, markers.rightEye.y, eyeDistance / 3, eyeDistance / 3);
+  flipFeatureVertically(offCtx, markers.mouth.x, markers.mouth.y, eyeDistance / 2, eyeDistance / 4);
 
-  // Create all 4 versions
+  // Cache as an ImageBitmap or just the canvas element
+  window._thatcherCanvas = offscreen;
+
   createVersion('canvas-original', false, false);
   createVersion('canvas-features-flipped', false, true);
   createVersion('canvas-upside-down', true, false);
   createVersion('canvas-both', true, true);
 
-  // Show results section
   document.getElementById('results-section').classList.add('show');
 }
 
@@ -149,34 +154,19 @@ function createVersion(canvasId, flipImage, invertFeatures) {
   canvas.width = width;
   canvas.height = height;
 
-  // Draw image (potentially flipped)
+  // Pick the right source: Thatcher version or original
+  const src = invertFeatures ? window._thatcherCanvas : sourceImg;
+
   if (flipImage) {
     ctx.save();
     ctx.translate(width / 2, height / 2);
     ctx.rotate(Math.PI);
-    ctx.drawImage(sourceImg, -width / 2, -height / 2);
+    ctx.drawImage(src, -width / 2, -height / 2);
     ctx.restore();
   } else {
-    ctx.drawImage(sourceImg, 0, 0);
+    ctx.drawImage(src, 0, 0);
   }
-
-  // Flip features vertically if needed
-  if (invertFeatures) {
-    // Distance between eyes
-    const eyeDistance = Math.abs(markers.rightEye.x - markers.leftEye.x);
-
-    // Left eye region - flip horizontally
-    const leftEyeRadius = eyeDistance / 3;
-    flipFeatureVertically(ctx, markers.leftEye.x, markers.leftEye.y, leftEyeRadius, leftEyeRadius);
-    // Right eye region - flip horizontally
-    const rightEyeRadius = eyeDistance / 3;
-    flipFeatureVertically(ctx, markers.rightEye.x, markers.rightEye.y, rightEyeRadius, rightEyeRadius);
-
-    // Mouth region - flip horizontally
-    const mouthRadiusX = eyeDistance / 2;
-    const mouthRadiusY = eyeDistance / 4;
-    flipFeatureVertically(ctx, markers.mouth.x, markers.mouth.y, mouthRadiusX, mouthRadiusY);
-  }
+  // No per-feature flipping needed here anymore
 }
 
 function flipFeatureVertically(ctx, centerX, centerY, radiusX, radiusY) {
