@@ -160,27 +160,26 @@ function createVersion(canvasId, flipImage, invertFeatures) {
     ctx.drawImage(sourceImg, 0, 0);
   }
 
-  // Flip features horizontally if needed
+  // Flip features vertically if needed
   if (invertFeatures) {
     // Distance between eyes
     const eyeDistance = Math.abs(markers.rightEye.x - markers.leftEye.x);
 
     // Left eye region - flip horizontally
     const leftEyeRadius = eyeDistance / 3;
-    flipFeatureHorizontally(ctx, markers.leftEye.x, markers.leftEye.y, leftEyeRadius, leftEyeRadius);
-
+    flipFeatureVertically(ctx, markers.leftEye.x, markers.leftEye.y, leftEyeRadius, leftEyeRadius);
     // Right eye region - flip horizontally
     const rightEyeRadius = eyeDistance / 3;
-    flipFeatureHorizontally(ctx, markers.rightEye.x, markers.rightEye.y, rightEyeRadius, rightEyeRadius);
+    flipFeatureVertically(ctx, markers.rightEye.x, markers.rightEye.y, rightEyeRadius, rightEyeRadius);
 
     // Mouth region - flip horizontally
     const mouthRadiusX = eyeDistance / 2;
     const mouthRadiusY = eyeDistance / 4;
-    flipFeatureHorizontally(ctx, markers.mouth.x, markers.mouth.y, mouthRadiusX, mouthRadiusY);
+    flipFeatureVertically(ctx, markers.mouth.x, markers.mouth.y, mouthRadiusX, mouthRadiusY);
   }
 }
 
-function flipFeatureHorizontally(ctx, centerX, centerY, radiusX, radiusY) {
+function flipFeatureVertically(ctx, centerX, centerY, radiusX, radiusY) {
   const startX = Math.max(0, Math.floor(centerX - radiusX));
   const endX = Math.min(sourceImg.naturalWidth, Math.ceil(centerX + radiusX));
   const startY = Math.max(0, Math.floor(centerY - radiusY));
@@ -194,17 +193,16 @@ function flipFeatureHorizontally(ctx, centerX, centerY, radiusX, radiusY) {
   const imageData = ctx.getImageData(startX, startY, width, height);
   const data = imageData.data;
 
-  // Flip horizontally (mirror left-right)
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width / 2; x++) {
-      const leftIdx = (y * width + x) * 4;
-      const rightIdx = (y * width + (width - 1 - x)) * 4;
+  // Flip vertically (mirror top-bottom)
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < Math.floor(height / 2); y++) {
+      const topIdx = (y * width + x) * 4;
+      const bottomIdx = ((height - 1 - y) * width + x) * 4;
 
-      // Swap RGBA values
       for (let c = 0; c < 4; c++) {
-        const temp = data[leftIdx + c];
-        data[leftIdx + c] = data[rightIdx + c];
-        data[rightIdx + c] = temp;
+        const temp = data[topIdx + c];
+        data[topIdx + c] = data[bottomIdx + c];
+        data[bottomIdx + c] = temp;
       }
     }
   }
