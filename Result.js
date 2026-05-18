@@ -1,0 +1,213 @@
+let sourceImg = null;
+let markers = {
+  leftEye: null,
+  rightEye: null,
+  mouth: null
+};
+let currentStep = 0;
+const steps = ['leftEye', 'rightEye', 'mouth'];
+const stepMessages = [
+  'Step 1: Click on the left eye',
+  'Step 2: Click on the right eye',
+  'Step 3: Click on the mouth'
+];
+
+window.addEventListener('DOMContentLoaded', () => {
+  const photoData = localStorage.getItem('capturedPhoto');
+
+  if (!photoData) {
+    document.body.innerHTML = '<div class="container"><h1>No photo found</h1><a href="Illusion.html" class="button">Take a Photo</a></div>';
+    return;
+  }
+
+  sourceImg = new Image();
+  sourceImg.src = photoData;
+  sourceImg.onload = () => {
+    initializeCanvas();
+  };
+});
+
+function initializeCanvas() {
+  const canvas = document.getElementById('interactive-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas size to match image
+  canvas.width = sourceImg.naturalWidth;
+  canvas.height = sourceImg.naturalHeight;
+
+  // Draw image
+  ctx.drawImage(sourceImg, 0, 0);
+
+  // Add click listener
+  canvas.addEventListener('click', handleCanvasClick);
+
+  // Add button listeners
+  document.getElementById('reset-btn').addEventListener('click', resetMarkers);
+  document.getElementById('create-btn').addEventListener('click', createIllusion);
+}
+
+function handleCanvasClick(event) {
+  const canvas = document.getElementById('interactive-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // Scale to canvas coordinates
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const canvasX = x * scaleX;
+  const canvasY = y * scaleY;
+
+  // Store marker
+  const stepName = steps[currentStep];
+  markers[stepName] = { x: canvasX, y: canvasY };
+
+  // Draw markers
+  redrawCanvas();
+
+  // Move to next step
+  currentStep++;
+  if (currentStep < 3) {
+    document.getElementById('step-info').textContent = stepMessages[currentStep];
+  } else {
+    document.getElementById('step-info').textContent = '✓ All marked! Click "Create Illusion" to see the effect';
+    document.getElementById('create-btn').disabled = false;
+  }
+}
+
+function redrawCanvas() {
+  const canvas = document.getElementById('interactive-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Redraw image
+  ctx.drawImage(sourceImg, 0, 0);
+
+  // Draw markers
+  if (markers.leftEye) {
+    drawMarker(ctx, markers.leftEye.x, markers.leftEye.y, '#e74c3c', 'L');
+  }
+  if (markers.rightEye) {
+    drawMarker(ctx, markers.rightEye.x, markers.rightEye.y, '#3498db', 'R');
+  }
+  if (markers.mouth) {
+    drawMarker(ctx, markers.mouth.x, markers.mouth.y, '#2ecc71', 'M');
+  }
+}
+
+function drawMarker(ctx, x, y, color, label) {
+  const radius = 25;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+}
+
+function resetMarkers() {
+  markers = {
+    leftEye: null,
+    rightEye: null,
+    mouth: null
+  };
+  currentStep = 0;
+  document.getElementById('step-info').textContent = stepMessages[0];
+  document.getElementById('create-btn').disabled = true;
+  redrawCanvas();
+}
+
+function createIllusion() {
+  const width = sourceImg.naturalWidth;
+  const height = sourceImg.naturalHeight;
+
+  // Calculate region sizes based on markers
+  const eyeRadius = Math.abs(markers.rightEye.x - markers.leftEye.x) / 4;
+  const mouthWidth = eyeRadius * 2;
+  const mouthHeight = eyeRadius * 0.8;
+
+  // Create all 4 versions
+  createVersion('canvas-original', false, false);
+  createVersion('canvas-features-flipped', false, true);
+  createVersion('canvas-upside-down', true, false);
+  createVersion('canvas-both', true, true);
+
+  // Show results section
+  document.getElementById('results-section').classList.add('show');
+}
+
+function createVersion(canvasId, flipImage, invertFeatures) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const width = sourceImg.naturalWidth;
+  const height = sourceImg.naturalHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  // Draw image (potentially flipped)
+  if (flipImage) {
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate(Math.PI);
+    ctx.drawImage(sourceImg, -width / 2, -height / 2);
+    ctx.restore();
+  } else {
+    ctx.drawImage(sourceImg, 0, 0);
+  }
+
+  // Flip features horizontally if needed
+  if (invertFeatures) {
+    // Distance between eyes
+    const eyeDistance = Math.abs(markers.rightEye.x - markers.leftEye.x);
+
+    // Left eye region - flip horizontally
+    const leftEyeRadius = eyeDistance / 3;
+    flipFeatureHorizontally(ctx, markers.leftEye.x, markers.leftEye.y, leftEyeRadius, leftEyeRadius);
+
+    // Right eye region - flip horizontally
+    const rightEyeRadius = eyeDistance / 3;
+    flipFeatureHorizontally(ctx, markers.rightEye.x, markers.rightEye.y, rightEyeRadius, rightEyeRadius);
+
+    // Mouth region - flip horizontally
+    const mouthRadiusX = eyeDistance / 2;
+    const mouthRadiusY = eyeDistance / 4;
+    flipFeatureHorizontally(ctx, markers.mouth.x, markers.mouth.y, mouthRadiusX, mouthRadiusY);
+  }
+}
+
+function flipFeatureHorizontally(ctx, centerX, centerY, radiusX, radiusY) {
+  const startX = Math.max(0, Math.floor(centerX - radiusX));
+  const endX = Math.min(sourceImg.naturalWidth, Math.ceil(centerX + radiusX));
+  const startY = Math.max(0, Math.floor(centerY - radiusY));
+  const endY = Math.min(sourceImg.naturalHeight, Math.ceil(centerY + radiusY));
+
+  const width = endX - startX;
+  const height = endY - startY;
+
+  if (width <= 0 || height <= 0) return;
+
+  const imageData = ctx.getImageData(startX, startY, width, height);
+  const data = imageData.data;
+
+  // Flip horizontally (mirror left-right)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width / 2; x++) {
+      const leftIdx = (y * width + x) * 4;
+      const rightIdx = (y * width + (width - 1 - x)) * 4;
+
+      // Swap RGBA values
+      for (let c = 0; c < 4; c++) {
+        const temp = data[leftIdx + c];
+        data[leftIdx + c] = data[rightIdx + c];
+        data[rightIdx + c] = temp;
+      }
+    }
+  }
+
+  ctx.putImageData(imageData, startX, startY);
+}

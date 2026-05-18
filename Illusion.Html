@@ -17,7 +17,14 @@
 
         <h1>Thatcher Illusion</h1>
 
-        <div class="camera">
+        <!-- Tab buttons to switch between camera and upload -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="camera">Camera</button>
+            <button class="tab-btn" data-tab="upload">Upload Photo</button>
+        </div>
+
+        <!-- Camera section -->
+        <div class="camera tab-content active" id="camera-tab">
 
             <!-- Live camera feed -->
             <video class="Video" autoplay playsinline></video>
@@ -37,6 +44,20 @@
             <!-- Shows the captured frame after the button is pressed -->
             <img id="captured-preview" alt="Captured image preview">
 
+        </div>
+
+        <!-- Upload section -->
+        <div class="upload tab-content" id="upload-tab">
+            <div class="upload-area" id="upload-area">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p>Drag and drop your photo here or click to browse</p>
+                <input type="file" id="file-input" accept="image/*" hidden>
+            </div>
+            <p id="upload-status" class="camera-status"></p>
         </div>
 
     </div>

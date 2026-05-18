@@ -116,12 +116,95 @@ p {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* Tab Buttons */
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--accent-beige);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.tab-btn.active {
+    color: var(--primary-burgundy);
+    border-bottom-color: var(--primary-burgundy);
+}
+
+.tab-btn:hover {
+    color: var(--primary-burgundy);
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
 /* Camera UI */
 .camera {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
+}
+
+/* Upload UI */
+.upload {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.upload-area {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 20px;
+    border: 2px dashed var(--primary-burgundy);
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: rgba(74, 0, 33, 0.02);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-burgundy);
+    background-color: rgba(74, 0, 33, 0.05);
+}
+
+.upload-area.dragover {
+    background-color: rgba(74, 0, 33, 0.1);
+    border-color: var(--primary-burgundy);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--primary-burgundy);
+    margin-bottom: 10px;
+}
+
+.upload-area p {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin: 0;
 }
 
 .Video {
@@ -182,3 +265,59 @@ p {
 
 .camera-status.ok    { color: var(--text-light); }
 .camera-status.error { color: #c0392b; font-weight: 600; }
+
+/* Result Page Styles */
+.result-container {
+    max-width: 1000px;
+}
+
+.illusion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 30px 0;
+    align-items: start;
+}
+
+.image-section {
+    text-align: center;
+}
+
+.image-section h3 {
+    color: var(--primary-burgundy);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.result-image {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 6px;
+    border: 2px solid var(--accent-beige);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 0 auto;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.button-group .button {
+    margin: 0;
+}
+
+@media (max-width: 968px) {
+    .illusion-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .result-image {
+        max-width: 100%;
+    }
+}

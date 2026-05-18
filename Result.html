@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thatcher Illusion Result</title>
+    <link rel="stylesheet" href="Style.css">
+    <style>
+        .interactive-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            max-width: 400px;
+            margin: 20px 0;
+        }
+
+        #interactive-canvas {
+            border: 2px solid var(--primary-burgundy);
+            border-radius: 6px;
+            cursor: crosshair;
+            display: block;
+            max-width: 100%;
+        }
+
+        .instruction-text {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(220, 210, 193, 0.3);
+            border-radius: 4px;
+        }
+
+        .marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .marker-left-eye {
+            border: 2px solid #e74c3c;
+            background-color: rgba(231, 76, 60, 0.3);
+        }
+
+        .marker-right-eye {
+            border: 2px solid #3498db;
+            background-color: rgba(52, 152, 219, 0.3);
+        }
+
+        .marker-mouth {
+            border: 2px solid #2ecc71;
+            background-color: rgba(46, 204, 113, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn-step {
+            background-color: var(--primary-burgundy);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-step:hover {
+            background-color: rgba(102, 0, 51, 1);
+            transform: translateY(-2px);
+        }
+
+        .btn-step:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .step-info {
+            font-size: 1.1rem;
+            color: var(--primary-burgundy);
+            font-weight: 600;
+            margin: 15px 0;
+            min-height: 1.5em;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .illusion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+            align-items: start;
+        }
+
+        .image-section h3 {
+            color: var(--primary-burgundy);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .result-image {
+            width: 100%;
+            max-width: 350px;
+            border-radius: 6px;
+            border: 2px solid var(--accent-beige);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <img src="LEEDS_TRINITY_LOGO.png" alt="LSU Logo" class="logo">
+    </header>
+
+    <!-- Main Container -->
+    <div class="container result-container">
+        <h1>Create Your Thatcher Illusion</h1>
+
+        <!-- Interactive Section -->
+        <div class="interactive-section">
+            <p class="instruction-text">Click on your image to mark: 1) Left Eye (red), 2) Right Eye (blue), 3) Mouth (green)</p>
+
+            <div class="canvas-container">
+                <canvas id="interactive-canvas"></canvas>
+            </div>
+
+            <div class="step-info" id="step-info">Step 1: Click on the left eye</div>
+
+            <div class="controls">
+                <button class="btn-step" id="reset-btn">Reset Markers</button>
+                <button class="btn-step" id="create-btn" disabled>Create Illusion</button>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden until illusion is created) -->
+        <div class="results-section" id="results-section">
+            <h2>Your Thatcher Illusion</h2>
+
+            <div class="illusion-grid">
+                <div class="image-section">
+                    <h3>Upside Down</h3>
+                    <canvas id="canvas-original" class="result-image"></canvas>
+                </div>
+
+                <div class="image-section">
+                    <h3>Upside Down<br>(Eyes & Mouth Inverted)</h3>
+                    <canvas id="canvas-features-flipped" class="result-image"></canvas>
+                </div>
+
+                <div class="image-section">
+                    <h3>Normal</h3>
+                    <canvas id="canvas-upside-down" class="result-image"></canvas>
+                </div>
+
+                <div class="image-section">
+                    <h3>Normal<br>(Eyes & Mouth Inverted)</h3>
+                    <canvas id="canvas-both" class="result-image"></canvas>
+                </div>
+            </div>
+
+            <p>Notice how the inverted eyes and mouth are subtle when upside down, but obvious when upright!</p>
+
+            <div class="button-group">
+                <a href="Illusion.html" class="button">Try Another Photo</a>
+                <a href="Main.html" class="button">Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="Result.js"></script>
+
+</body>
+</html>
