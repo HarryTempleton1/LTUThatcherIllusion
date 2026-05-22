@@ -14,7 +14,7 @@ const stepMessages = [
 let autoDetectionDone = false;
 
 // face-api model URLs (jsDelivr CDN — no local files needed)
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+const MODEL_URL = './weights';
 
 window.addEventListener('DOMContentLoaded', async () => {
   const photoData = localStorage.getItem('capturedPhoto');
