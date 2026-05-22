@@ -11,8 +11,12 @@ const stepMessages = [
   'Step 2: Click on the right eye',
   'Step 3: Click on the mouth'
 ];
+let autoDetectionDone = false;
 
-window.addEventListener('DOMContentLoaded', () => {
+// face-api model URLs (jsDelivr CDN — no local files needed)
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+
+window.addEventListener('DOMContentLoaded', async () => {
   const photoData = localStorage.getItem('capturedPhoto');
 
   if (!photoData) {
@@ -22,50 +26,114 @@ window.addEventListener('DOMContentLoaded', () => {
 
   sourceImg = new Image();
   sourceImg.src = photoData;
-  sourceImg.onload = () => {
+  sourceImg.onload = async () => {
     initializeCanvas();
+    await attemptAutoDetection();
   };
 });
+
+async function loadModels() {
+  await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+}
+
+async function attemptAutoDetection() {
+  setStatus('Detecting face…', 'info');
+
+  try {
+    await loadModels();
+
+    const detection = await faceapi
+      .detectSingleFace(sourceImg)
+      .withFaceLandmarks();
+
+    if (!detection) {
+      setStatus('No face detected — click the eyes and mouth manually.', 'warn');
+      enableManualMode();
+      return;
+    }
+
+    const landmarks = detection.landmarks;
+
+    // face-api returns arrays of points for each feature
+    const leftEyePts  = landmarks.getLeftEye();   // user's actual left eye
+    const rightEyePts = landmarks.getRightEye();  // user's actual right eye
+    const mouthPts    = landmarks.getMouth();
+
+    markers.leftEye  = centroid(leftEyePts);
+    markers.rightEye = centroid(rightEyePts);
+    markers.mouth    = centroid(mouthPts);
+
+    autoDetectionDone = true;
+    currentStep = 3; // skip manual steps
+
+    redrawCanvas();
+    setStatus('Face detected! Click "Create Illusion" to continue.', 'success');
+    document.getElementById('step-info').textContent = '✓ Eyes and mouth detected automatically';
+    document.getElementById('create-btn').disabled = false;
+
+  } catch (err) {
+    console.warn('face-api error:', err);
+    setStatus('Auto-detection unavailable — click the eyes and mouth manually.', 'warn');
+    enableManualMode();
+  }
+}
+
+/** Average a set of {x, y} landmark points into one centre point */
+function centroid(points) {
+  const sum = points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
+  return { x: sum.x / points.length, y: sum.y / points.length };
+}
+
+function setStatus(message, type = 'info') {
+  let el = document.getElementById('detection-status');
+  if (!el) {
+    el = document.createElement('p');
+    el.id = 'detection-status';
+    el.style.cssText = 'margin: 8px 0; font-weight: bold; font-size: 0.95em;';
+    const stepInfo = document.getElementById('step-info');
+    if (stepInfo) stepInfo.parentNode.insertBefore(el, stepInfo);
+  }
+  const colours = { info: '#555', warn: '#b8860b', success: '#27ae60', error: '#c0392b' };
+  el.style.color = colours[type] || '#555';
+  el.textContent = message;
+}
+
+function enableManualMode() {
+  const canvas = document.getElementById('interactive-canvas');
+  canvas.addEventListener('click', handleCanvasClick);
+  document.getElementById('step-info').textContent = stepMessages[0];
+}
 
 function initializeCanvas() {
   const canvas = document.getElementById('interactive-canvas');
   const ctx = canvas.getContext('2d');
 
-  // Set canvas size to match image
   canvas.width = sourceImg.naturalWidth;
   canvas.height = sourceImg.naturalHeight;
-
-  // Draw image
   ctx.drawImage(sourceImg, 0, 0);
 
-  // Add click listener
-  canvas.addEventListener('click', handleCanvasClick);
-
-  // Add button listeners
   document.getElementById('reset-btn').addEventListener('click', resetMarkers);
   document.getElementById('create-btn').addEventListener('click', createIllusion);
+
+  // Manual click listener is added only as fallback (see enableManualMode)
 }
 
 function handleCanvasClick(event) {
+  if (autoDetectionDone) return; // ignore clicks after auto-detection
+
   const canvas = document.getElementById('interactive-canvas');
   const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  // Scale to canvas coordinates
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
-  const canvasX = x * scaleX;
-  const canvasY = y * scaleY;
+  const canvasX = (event.clientX - rect.left) * scaleX;
+  const canvasY = (event.clientY - rect.top)  * scaleY;
 
-  // Store marker
   const stepName = steps[currentStep];
   markers[stepName] = { x: canvasX, y: canvasY };
 
-  // Draw markers
   redrawCanvas();
 
-  // Move to next step
   currentStep++;
   if (currentStep < 3) {
     document.getElementById('step-info').textContent = stepMessages[currentStep];
@@ -79,19 +147,11 @@ function redrawCanvas() {
   const canvas = document.getElementById('interactive-canvas');
   const ctx = canvas.getContext('2d');
 
-  // Redraw image
   ctx.drawImage(sourceImg, 0, 0);
 
-  // Draw markers
-  if (markers.leftEye) {
-    drawMarker(ctx, markers.leftEye.x, markers.leftEye.y, '#e74c3c', 'L');
-  }
-  if (markers.rightEye) {
-    drawMarker(ctx, markers.rightEye.x, markers.rightEye.y, '#3498db', 'R');
-  }
-  if (markers.mouth) {
-    drawMarker(ctx, markers.mouth.x, markers.mouth.y, '#2ecc71', 'M');
-  }
+  if (markers.leftEye)  drawMarker(ctx, markers.leftEye.x,  markers.leftEye.y,  '#e74c3c', 'L');
+  if (markers.rightEye) drawMarker(ctx, markers.rightEye.x, markers.rightEye.y, '#3498db', 'R');
+  if (markers.mouth)    drawMarker(ctx, markers.mouth.x,    markers.mouth.y,    '#2ecc71', 'M');
 }
 
 function drawMarker(ctx, x, y, color, label) {
@@ -110,19 +170,25 @@ function drawMarker(ctx, x, y, color, label) {
 }
 
 function resetMarkers() {
-  markers = {
-    leftEye: null,
-    rightEye: null,
-    mouth: null
-  };
+  markers = { leftEye: null, rightEye: null, mouth: null };
   currentStep = 0;
+  autoDetectionDone = false;
+
+  const canvas = document.getElementById('interactive-canvas');
+
+  // Re-attempt auto-detection on reset
+  setStatus('', 'info');
   document.getElementById('step-info').textContent = stepMessages[0];
   document.getElementById('create-btn').disabled = true;
   redrawCanvas();
+
+  // Remove old manual listener before potentially re-adding it
+  canvas.removeEventListener('click', handleCanvasClick);
+
+  attemptAutoDetection();
 }
 
 function createIllusion() {
-  // Create the Thatcher-effected image data once and cache it
   const offscreen = document.createElement('canvas');
   offscreen.width = sourceImg.naturalWidth;
   offscreen.height = sourceImg.naturalHeight;
@@ -130,17 +196,16 @@ function createIllusion() {
   offCtx.drawImage(sourceImg, 0, 0);
 
   const eyeDistance = Math.abs(markers.rightEye.x - markers.leftEye.x);
-  flipFeatureVertically(offCtx, markers.leftEye.x, markers.leftEye.y, eyeDistance / 3, eyeDistance / 3);
+  flipFeatureVertically(offCtx, markers.leftEye.x,  markers.leftEye.y,  eyeDistance / 3, eyeDistance / 3);
   flipFeatureVertically(offCtx, markers.rightEye.x, markers.rightEye.y, eyeDistance / 3, eyeDistance / 3);
-  flipFeatureVertically(offCtx, markers.mouth.x, markers.mouth.y, eyeDistance / 2, eyeDistance / 4);
+  flipFeatureVertically(offCtx, markers.mouth.x,    markers.mouth.y,    eyeDistance / 2, eyeDistance / 4);
 
-  // Cache as an ImageBitmap or just the canvas element
   window._thatcherCanvas = offscreen;
 
-  createVersion('canvas-original', false, false);
+  createVersion('canvas-original',        false, false);
   createVersion('canvas-features-flipped', false, true);
-  createVersion('canvas-upside-down', true, false);
-  createVersion('canvas-both', true, true);
+  createVersion('canvas-upside-down',      true,  false);
+  createVersion('canvas-both',             true,  true);
 
   document.getElementById('results-section').classList.add('show');
 }
@@ -148,13 +213,12 @@ function createIllusion() {
 function createVersion(canvasId, flipImage, invertFeatures) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
-  const width = sourceImg.naturalWidth;
+  const width  = sourceImg.naturalWidth;
   const height = sourceImg.naturalHeight;
 
-  canvas.width = width;
+  canvas.width  = width;
   canvas.height = height;
 
-  // Pick the right source: Thatcher version or original
   const src = invertFeatures ? window._thatcherCanvas : sourceImg;
 
   if (flipImage) {
@@ -166,29 +230,25 @@ function createVersion(canvasId, flipImage, invertFeatures) {
   } else {
     ctx.drawImage(src, 0, 0);
   }
-  // No per-feature flipping needed here anymore
 }
 
 function flipFeatureVertically(ctx, centerX, centerY, radiusX, radiusY) {
   const startX = Math.max(0, Math.floor(centerX - radiusX));
-  const endX = Math.min(sourceImg.naturalWidth, Math.ceil(centerX + radiusX));
+  const endX   = Math.min(sourceImg.naturalWidth,  Math.ceil(centerX + radiusX));
   const startY = Math.max(0, Math.floor(centerY - radiusY));
-  const endY = Math.min(sourceImg.naturalHeight, Math.ceil(centerY + radiusY));
+  const endY   = Math.min(sourceImg.naturalHeight, Math.ceil(centerY + radiusY));
 
-  const width = endX - startX;
+  const width  = endX - startX;
   const height = endY - startY;
-
   if (width <= 0 || height <= 0) return;
 
   const imageData = ctx.getImageData(startX, startY, width, height);
   const data = imageData.data;
 
-  // Flip vertically (mirror top-bottom)
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < Math.floor(height / 2); y++) {
-      const topIdx = (y * width + x) * 4;
+      const topIdx    = (y * width + x) * 4;
       const bottomIdx = ((height - 1 - y) * width + x) * 4;
-
       for (let c = 0; c < 4; c++) {
         const temp = data[topIdx + c];
         data[topIdx + c] = data[bottomIdx + c];
