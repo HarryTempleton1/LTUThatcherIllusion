@@ -135,6 +135,68 @@
             display: block;
             margin: 0 auto;
         }
+
+        .download-btn {
+            background-color: var(--primary-burgundy);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: rgba(102, 0, 51, 1);
+            transform: translateY(-2px);
+        }
+
+        .share-btn {
+            background-color: #E4405F;
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            background-color: #C13584;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .share-all-btn {
+            background-color: #E4405F;
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .share-all-btn:hover {
+            background-color: #C13584;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -171,21 +233,37 @@
                 <div class="image-section">
                     <h3>Upside Down</h3>
                     <canvas id="canvas-original" class="result-image"></canvas>
+                    <div>
+                        <button class="download-btn" onclick="downloadImage('canvas-original', 'upside-down.png')">Download</button>
+                        <button class="share-btn" onclick="shareToInstagram('canvas-original', 'Upside Down Thatcher Illusion')">Share to Instagram</button>
+                    </div>
                 </div>
 
                 <div class="image-section">
                     <h3>Upside Down<br>(Eyes & Mouth Inverted)</h3>
                     <canvas id="canvas-features-flipped" class="result-image"></canvas>
+                    <div>
+                        <button class="download-btn" onclick="downloadImage('canvas-features-flipped', 'upside-down-inverted.png')">Download</button>
+                        <button class="share-btn" onclick="shareToInstagram('canvas-features-flipped', 'Thatcher Illusion - Inverted')">Share to Instagram</button>
+                    </div>
                 </div>
 
                 <div class="image-section">
                     <h3>Normal</h3>
                     <canvas id="canvas-upside-down" class="result-image"></canvas>
+                    <div>
+                        <button class="download-btn" onclick="downloadImage('canvas-upside-down', 'normal.png')">Download</button>
+                        <button class="share-btn" onclick="shareToInstagram('canvas-upside-down', 'Normal Thatcher Illusion')">Share to Instagram</button>
+                    </div>
                 </div>
 
                 <div class="image-section">
                     <h3>Normal<br>(Eyes & Mouth Inverted)</h3>
                     <canvas id="canvas-both" class="result-image"></canvas>
+                    <div>
+                        <button class="download-btn" onclick="downloadImage('canvas-both', 'normal-inverted.png')">Download</button>
+                        <button class="share-btn" onclick="shareToInstagram('canvas-both', 'Thatcher Illusion - Normal Inverted')">Share to Instagram</button>
+                    </div>
                 </div>
             </div>
 

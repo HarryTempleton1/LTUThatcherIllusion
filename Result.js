@@ -199,3 +199,50 @@ function flipFeatureVertically(ctx, centerX, centerY, radiusX, radiusY) {
 
   ctx.putImageData(imageData, startX, startY);
 }
+
+function downloadImage(canvasId, filename) {
+  const canvas = document.getElementById(canvasId);
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function shareToInstagram(canvasId, title) {
+  const canvas = document.getElementById(canvasId);
+  canvas.toBlob((blob) => {
+    const file = new File([blob], `${title}.png`, { type: 'image/png' });
+
+    if (navigator.share) {
+      navigator.share({
+        files: [file],
+        title: title,
+        text: 'Check out my Thatcher Illusion!'
+      }).catch(err => {
+        if (err.name !== 'AbortError') {
+          console.log('Share error:', err);
+          fallbackShare(canvasId, title);
+        }
+      });
+    } else {
+      fallbackShare(canvasId, title);
+    }
+  }, 'image/png');
+}
+
+function fallbackShare(canvasId, title) {
+  const canvas = document.getElementById(canvasId);
+  const dataUrl = canvas.toDataURL('image/png');
+
+  // Create temporary link and download
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `${title}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  alert('Image downloaded! Now open Instagram and upload it from your photos.');
+}
